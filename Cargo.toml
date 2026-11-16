@@ -1,0 +1,17 @@
+[package]
+name = "blinc-markdoc"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Renders Markdoc documents as Blinc UI elements"
+repository = "https://github.com/markdoc-rs/blinc-markdoc"
+
+[lib]
+name = "blinc_markdoc"
+path = "src/lib.rs"
+
+[dependencies]
+markdoc = "0.1.0"
+blinc_core = "0.6.0"
+blinc_layout = "0.6.0"
+blinc_icons = "0.6.0"

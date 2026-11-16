@@ -1,0 +1,61 @@
+# CI for blinc-markdoc — https://github.com/markdoc-rs/blinc-markdoc
+#
+# The gate itself is in `.github/scripts/check.sh`, not here, so release.yml
+# runs exactly the same set before it publishes anything. A second list of
+# steps drifts, and the half that drifts is always the one nobody watches.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: blinc-markdoc
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: blinc-markdoc
+
+      # fmt, clippy, the tests, the doctests and a release build.
+      - name: check.sh
+        run: bash blinc-markdoc/.github/scripts/check.sh blinc-markdoc
+
+  # ────────────────────────────────────────────────────────────────────
+  # The crate ships no binary, so this is not about a platform's build: it
+  # is about what it draws. Layout is float arithmetic over text, and the
+  # one place a platform could disagree is the size it measures a string
+  # to — which is a difference that only shows up off Linux.
+  # ────────────────────────────────────────────────────────────────────
+  test:
+    name: test ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: blinc-markdoc
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: blinc-markdoc
+          key: test-${{ matrix.os }}
+
+      - name: cargo test
+        working-directory: blinc-markdoc
+        run: cargo test --all-targets
